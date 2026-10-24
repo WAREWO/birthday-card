@@ -151,7 +151,8 @@
   // so the song also starts on that first interaction.
   const music = document.getElementById('bg-music');
   const SONG_START = 51;
-  const startEvents = ['pointerdown', 'click', 'touchend', 'keydown'];
+  // Scrolling is tried too, though most browsers only allow sound after a tap, click or key press.
+  const startEvents = ['pointerdown', 'click', 'touchstart', 'touchend', 'keydown', 'wheel', 'scroll'];
   function jumpToStart() { if (music.currentTime < SONG_START) music.currentTime = SONG_START; }
   function playMusic() {
     if (music.readyState >= 1) jumpToStart();
@@ -160,11 +161,11 @@
   function startOnFirstTouch() {
     if (!music.paused) return;
     playMusic().then(() => {
-      if (!music.paused) startEvents.forEach(type => removeEventListener(type, startOnFirstTouch, true));
+      if (!music.paused) startEvents.forEach(type => removeEventListener(type, startOnFirstTouch, { capture: true }));
     });
   }
   music.addEventListener('loadedmetadata', jumpToStart);
   music.addEventListener('ended', () => { music.currentTime = SONG_START; music.play().catch(() => {}); });
-  startEvents.forEach(type => addEventListener(type, startOnFirstTouch, true));
+  startEvents.forEach(type => addEventListener(type, startOnFirstTouch, { capture: true, passive: true }));
   playMusic();
 })();
